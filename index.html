@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Mes Cartes IGN</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2563eb">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { display: flex; height: 100vh; width: 100vw; overflow: hidden; background: #0f172a; color: #f8fafc; }
+    
+    #sidebar {
+      width: 340px;
+      background: #1e293b;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #334155;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .header { padding: 1rem; background: #0f172a; border-bottom: 1px solid #334155; }
+    .header h1 { font-size: 1.15rem; font-weight: 700; color: #38bdf8; }
+    .stats { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+
+    .search-box { padding: 0.75rem; border-bottom: 1px solid #334155; }
+    .search-box input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .search-box input:focus { outline: none; border-color: #38bdf8; }
+
+    .list-container { flex: 1; overflow-y: auto; padding: 0.5rem; }
+    .card-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 4px;
+      background: #334155;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .card-item:hover { background: #475569; }
+    .card-item.owned { border-left: 4px solid #22c55e; }
+    .card-info { flex: 1; margin-right: 8px; }
+    .card-ref { font-weight: bold; font-size: 0.9rem; color: #f1f5f9; }
+    .card-name { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+    #map { flex: 1; height: 100%; width: 100%; }
+
+    .custom-badge {
+      padding: 2px 6px;
+      font-size: 0.7rem;
+      border-radius: 4px;
+      background: #64748b;
+    }
+    .custom-badge.owned { background: #16a34a; }
+
+    /* Mobile toggle */
+    .mobile-btn {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2000;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      #sidebar { position: absolute; height: 100%; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-btn { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="mobile-btn" onclick="toggleSidebar()">☰ Liste</button>
+
+  <div id="sidebar">
+    <div class="header">
+      <h1>Mes Cartes IGN TOP 25</h1>
+      <div class="stats" id="stats">0 carte(s) possédée(s)</div>
+    </div>
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Rechercher par réf. ou nom..." oninput="renderList()">
+    </div>
+    <div class="list-container" id="list"></div>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // Enregistrement PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+
+    // Données des emprises (Exemple d'emprises réelles TOP 25)
+    // Structure : [ref, nom, [lat_min, lon_min, lat_max, lon_max]]
+    const IGN_DATA = [
+      { ref: "3334OT", name: "Massif de la Chartreuse Sud", bbox: [45.18, 5.75, 45.36, 6.00] },
+      { ref: "3335ET", name: "Le Bourg-d'Oisans / Alpe d'Huez", bbox: [45.00, 5.95, 45.18, 6.20] },
+      { ref: "3335OT", name: "Grenoble / Chamrousse / Belledonne", bbox: [45.09, 5.70, 45.27, 5.95] },
+      { ref: "3433OT", name: "Allevard / Belledonne Nord", bbox: [45.27, 5.95, 45.45, 6.20] },
+      { ref: "3435ET", name: "Vanoise / Parc National de la Vanoise", bbox: [45.27, 6.60, 45.45, 6.90] },
+      { ref: "3436ET", name: "Meije / Pelvoux / Parc National des Écrins", bbox: [44.91, 6.20, 45.09, 6.48] },
+      { ref: "3235OT", name: "Autrans / Gorges du Méaudret / Vercors Nord", bbox: [45.09, 5.45, 45.27, 5.70] },
+      { ref: "3237OT", name: "Glandasse / Cirque d'Archiane", bbox: [44.73, 5.45, 44.91, 5.70] }
+    ];
+
+    // État (persistance locale)
+    let owned = JSON.parse(localStorage.getItem('ign_owned_cards') || '[]');
+    let geoLayers = {};
+
+    // Initialisation Carte (centrée par défaut sur Belledonne / Isère)
+    const map = L.map('map').setView([45.20, 5.95], 10);
+
+    // Fond OSM clair
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap | Données IGN'
+    }).addTo(map);
+
+    function getStyle(isOwned) {
+      return {
+        color: isOwned ? '#16a34a' : '#64748b',
+        weight: isOwned ? 2 : 1,
+        fillColor: isOwned ? '#22c55e' : '#94a3b8',
+        fillOpacity: isOwned ? 0.45 : 0.08
+      };
+    }
+
+    // Affichage des rectangles
+    IGN_DATA.forEach(card => {
+      const bounds = [
+        [card.bbox[0], card.bbox[1]],
+        [card.bbox[2], card.bbox[3]]
+      ];
+      const isOwned = owned.includes(card.ref);
+      const rect = L.rectangle(bounds, getStyle(isOwned)).addTo(map);
+      
+      rect.bindTooltip(`<b>${card.ref}</b><br>${card.name}`, { sticky: true });
+      rect.on('click', () => toggleCard(card.ref));
+      geoLayers[card.ref] = rect;
+    });
+
+    function toggleCard(ref) {
+      if (owned.includes(ref)) {
+        owned = owned.filter(id => id !== ref);
+      } else {
+        owned.push(ref);
+      }
+      localStorage.setItem('ign_owned_cards', JSON.stringify(owned));
+      updateUI();
+    }
+
+    function updateUI() {
+      // Maj de la carte
+      IGN_DATA.forEach(card => {
+        const isOwned = owned.includes(card.ref);
+        if (geoLayers[card.ref]) {
+          geoLayers[card.ref].setStyle(getStyle(isOwned));
+        }
+      });
+
+      // Maj des stats
+      document.getElementById('stats').innerText = `${owned.length} / ${IGN_DATA.length} carte(s) possédée(s)`;
+      renderList();
+    }
+
+    function renderList() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const listEl = document.getElementById('list');
+      listEl.innerHTML = '';
+
+      IGN_DATA
+        .filter(c => c.ref.toLowerCase().includes(query) || c.name.toLowerCase().includes(query))
+        .sort((a, b) => (owned.includes(b.ref) - owned.includes(a.ref)))
+        .forEach(card => {
+          const isOwned = owned.includes(card.ref);
+          const div = document.createElement('div');
+          div.className = `card-item ${isOwned ? 'owned' : ''}`;
+          div.innerHTML = `
+            <div class="card-info">
+              <div class="card-ref">${card.ref}</div>
+              <div class="card-name">${card.name}</div>
+            </div>
+            <span class="custom-badge ${isOwned ? 'owned' : ''}">${isOwned ? 'Possédée' : 'Ajouter'}</span>
+          `;
+          div.onclick = () => {
+            toggleCard(card.ref);
+            const b = geoLayers[card.ref].getBounds();
+            map.fitBounds(b, { maxZoom: 11 });
+          };
+          listEl.appendChild(div);
+        });
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Init
+    updateUI();
+  </script>
+</body>
+</html>
