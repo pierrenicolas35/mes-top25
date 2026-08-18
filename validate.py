@@ -82,6 +82,8 @@ for i, card in enumerate(data):
 seen = set()
 for card in data:
     r = card.get("ref", "")
+    if not r:
+        continue
     if r in seen:
         errors.append(f"Duplicate ref: {r}")
     seen.add(r)
@@ -92,9 +94,12 @@ for ref in sorted(REQUIRED_REFS):
         errors.append(f"Required card missing: {ref}")
 
 # ── France coverage: check at least N distinct lat/lon bands ──
-lat_bands = set(round(c["bbox"][0], 2) for c in data
+valid_cards = [c for c in data
+               if isinstance(c.get("bbox"), list) and len(c["bbox"]) >= 4
+               and all(isinstance(v, (int, float)) for v in c["bbox"])]
+lat_bands = set(round(c["bbox"][0], 2) for c in valid_cards
                 if FRANCE_LAT_MIN <= c["bbox"][0] <= FRANCE_LAT_MAX)
-lon_bands = set(round(c["bbox"][1], 2) for c in data
+lon_bands = set(round(c["bbox"][1], 2) for c in valid_cards
                 if FRANCE_LON_MIN <= c["bbox"][1] <= FRANCE_LON_MAX)
 
 MIN_LAT_BANDS = 30  # expect ≥ 30 distinct latitude bands covering France
