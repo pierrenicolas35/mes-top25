@@ -168,33 +168,37 @@
       renderList();
     }
 
-    function renderList() {
-      const query = document.getElementById('search').value.toLowerCase();
-      const listEl = document.getElementById('list');
-      listEl.innerHTML = '';
+   function renderList() {
+  const query = document.getElementById('search').value.toLowerCase().replace(/\s+/g, '');
+  const listEl = document.getElementById('list');
+  listEl.innerHTML = '';
 
-      IGN_DATA
-        .filter(c => c.ref.toLowerCase().includes(query) || c.name.toLowerCase().includes(query))
-        .sort((a, b) => (owned.includes(b.ref) - owned.includes(a.ref)))
-        .forEach(card => {
-          const isOwned = owned.includes(card.ref);
-          const div = document.createElement('div');
-          div.className = `card-item ${isOwned ? 'owned' : ''}`;
-          div.innerHTML = `
-            <div class="card-info">
-              <div class="card-ref">${card.ref}</div>
-              <div class="card-name">${card.name}</div>
-            </div>
-            <span class="custom-badge ${isOwned ? 'owned' : ''}">${isOwned ? 'Possédée' : 'Ajouter'}</span>
-          `;
-          div.onclick = () => {
-            toggleCard(card.ref);
-            const b = geoLayers[card.ref].getBounds();
-            map.fitBounds(b, { maxZoom: 11 });
-          };
-          listEl.appendChild(div);
-        });
-    }
+  IGN_DATA
+    .filter(c => {
+      const refNorm = c.ref.toLowerCase().replace(/\s+/g, '');
+      const nameNorm = c.name.toLowerCase().replace(/\s+/g, '');
+      return refNorm.includes(query) || nameNorm.includes(query);
+    })
+    .sort((a, b) => (owned.includes(b.ref) - owned.includes(a.ref)))
+    .forEach(card => {
+      const isOwned = owned.includes(card.ref);
+      const div = document.createElement('div');
+      div.className = `card-item ${isOwned ? 'owned' : ''}`;
+      div.innerHTML = `
+        <div class="card-info">
+          <div class="card-ref">${card.ref}</div>
+          <div class="card-name">${card.name}</div>
+        </div>
+        <span class="custom-badge ${isOwned ? 'owned' : ''}">${isOwned ? 'Possédée' : 'Ajouter'}</span>
+      `;
+      div.onclick = () => {
+        toggleCard(card.ref);
+        const b = geoLayers[card.ref].getBounds();
+        map.fitBounds(b, { maxZoom: 11 });
+      };
+      listEl.appendChild(div);
+    });
+}
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
