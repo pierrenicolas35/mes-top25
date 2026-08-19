@@ -10,25 +10,25 @@
   
   <style>
     :root {
-      --md-sys-color-primary: #a8c7fa;
-      --md-sys-color-on-primary: #062e6f;
-      --md-sys-color-primary-container: #0842a0;
-      --md-sys-color-on-primary-container: #d3e3fd;
-      --md-sys-color-secondary: #c2c7cf;
-      --md-sys-color-error: #ffb4ab;
-      --md-sys-color-background: #111318;
-      --md-sys-color-on-background: #e2e2e9;
-      --md-sys-color-surface: #111318;
-      --md-sys-color-on-surface: #e2e2e9;
-      --md-sys-color-surface-variant: #44474f;
-      --md-sys-color-on-surface-variant: #c4c6d0;
-      --md-sys-color-outline: #8e9099;
-      --md-sys-color-outline-variant: #44474f;
-      --md-sys-color-surface-container-highest: #33353a;
-      --md-sys-color-surface-container-high: #2b2d31;
-      --md-sys-color-surface-container: #1e1f24;
-      --md-sys-color-surface-container-low: #1a1c20;
-      --md-sys-color-surface-container-lowest: #0c0e13;
+      --md-sys-color-primary: #2563eb;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #dbeafe;
+      --md-sys-color-on-primary-container: #1e3a8a;
+      --md-sys-color-secondary: #475569;
+      --md-sys-color-error: #dc2626;
+      --md-sys-color-background: #f8fafc;
+      --md-sys-color-on-background: #0f172a;
+      --md-sys-color-surface: #f8fafc;
+      --md-sys-color-on-surface: #0f172a;
+      --md-sys-color-surface-variant: #e2e8f0;
+      --md-sys-color-on-surface-variant: #475569;
+      --md-sys-color-outline: #94a3b8;
+      --md-sys-color-outline-variant: #cbd5e1;
+      --md-sys-color-surface-container-highest: #e2e8f0;
+      --md-sys-color-surface-container-high: #f1f5f9;
+      --md-sys-color-surface-container: #f8fafc;
+      --md-sys-color-surface-container-low: #ffffff;
+      --md-sys-color-surface-container-lowest: #ffffff;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', system-ui, -apple-system, sans-serif; }
@@ -36,10 +36,10 @@
     
     #sidebar {
       width: 360px;
-      background: var(--md-sys-color-surface-container, #1e293b);
+      background: var(--md-sys-color-surface-container);
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--md-sys-color-outline-variant, #334155);
+      border-right: 1px solid var(--md-sys-color-outline-variant);
       z-index: 3000;
       transition: transform 0.3s ease;
     }
@@ -87,7 +87,7 @@
     }
     .btn:hover { background: var(--md-sys-color-on-primary-container); color: var(--md-sys-color-primary-container); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
     .btn-danger { background: var(--md-sys-color-error); color: var(--md-sys-color-background); }
-    .btn-danger:hover { background: #ffdad6; color: #410002; }
+    .btn-danger:hover { opacity: 0.9; }
     .btn-outline { background: transparent; border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-primary); }
     .btn-outline:hover { background: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
 
@@ -118,7 +118,7 @@
     .card-name { font-size: 0.8rem; color: var(--md-sys-color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
 
     .owners-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-    .owner-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 6px; color: #fff; font-weight: 600; }
+    .owner-pill { font-size: 0.7rem; padding: 2px 6px; border-radius: 6px; color: var(--md-sys-color-on-primary); font-weight: 600; }
 
     #map { flex: 1; height: 100%; width: 100%; }
 
@@ -211,7 +211,7 @@
 
       <!-- Formulaire d'édition -->
       <div id="editPanel">
-        <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:4px;">Modifier le profil :</div>
+        <div style="font-size:0.75rem; color:var(--md-sys-color-on-surface-variant); margin-bottom:4px;">Modifier le profil :</div>
         <div class="row">
           <input type="text" id="editUserName">
           <input type="color" id="editUserColor">
@@ -316,7 +316,7 @@
           [card.bbox[2], card.bbox[3]]
         ];
         // Création de l'emprise sans événement de clic direct pour sécuriser le tactile
-        const rect = L.rectangle(bounds, { color: '#94a3b8', weight: 0.8, fillOpacity: 0.05 }).addTo(map);
+        const rect = L.rectangle(bounds, { color: 'var(--md-sys-color-outline)', weight: 0.8, fillOpacity: 0.05 }).addTo(map);
         rect.bindTooltip(`<b>${card.ref}</b><br>${card.name}`, { sticky: true });
         geoLayers[card.ref] = rect;
       });
@@ -469,8 +469,8 @@
           <div class="user-info-label" onclick="selectActiveUser(${u.id})">
             <input type="checkbox" ${visibleUserIds.has(u.id) ? 'checked' : ''} onclick="toggleFilterUser(${u.id}, this.checked, event)">
             <span class="color-dot" style="background:${u.color}"></span>
-            <span style="font-weight:${isCurrent ? 'bold' : 'normal'}; color:${isCurrent ? '#38bdf8' : '#fff'}">${u.user_name}</span>
-            <span style="font-size:0.7rem;color:#94a3b8;">(${(u.owned_cards || []).length})</span>
+            <span style="font-weight:${isCurrent ? 'bold' : 'normal'}; color:${isCurrent ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)'}">${u.user_name}</span>
+            <span style="font-size:0.7rem;color:var(--md-sys-color-on-surface-variant);">(${(u.owned_cards || []).length})</span>
           </div>
           <button class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="openEditPanel(users.find(x => x.id === ${u.id}), event)">⚙</button>
         `;
@@ -487,7 +487,7 @@
         if (!layer) return;
 
         if (owners.length === 0) {
-          layer.setStyle({ color: '#94a3b8', weight: 0.8, fillColor: '#cbd5e1', fillOpacity: 0.05 });
+          layer.setStyle({ color: 'var(--md-sys-color-outline)', weight: 0.8, fillColor: 'var(--md-sys-color-outline-variant)', fillOpacity: 0.05 });
         } else if (owners.length === 1) {
           layer.setStyle({ color: owners[0].color, weight: 2, fillColor: owners[0].color, fillOpacity: 0.5 });
         } else {
@@ -531,7 +531,7 @@
               <div class="card-name">${card.name}</div>
               <div class="owners-badges">${badgesHtml}</div>
             </div>
-            <button class="btn" style="padding:4px 8px; font-size:0.75rem; background:${isOwnedByMe ? '#16a34a' : '#475569'}">
+            <button class="btn" style="padding:4px 8px; font-size:0.75rem; background:${isOwnedByMe ? '#16a34a' : 'var(--md-sys-color-secondary)'}">
               ${isOwnedByMe ? 'Possédée' : 'Ajouter'}
             </button>
           `;
