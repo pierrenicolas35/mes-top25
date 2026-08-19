@@ -185,26 +185,26 @@
 </head>
 <body>
 
-  <button class="mobile-btn" onclick="toggleSidebar()">☰ Menu</button>
+  <button class="mobile-btn" onclick="toggleSidebar()" aria-label="Ouvrir ou fermer le menu navigation">☰ Menu</button>
 
   <div id="sidebar">
     <div class="header">
       <h1>Mes Cartes IGN</h1>
-      <button class="btn btn-outline" style="font-size:0.75rem;" onclick="loadUsersFromSheets(true)">↻ Sync</button>
+      <button class="btn btn-outline" style="font-size:0.75rem;" onclick="loadUsersFromSheets(true)" aria-label="Synchroniser les profils et données">↻ Sync</button>
     </div>
 
     <!-- Profils & Visibilité -->
     <div class="section">
       <div class="section-title">
         <span>Profils & Visibilité</span>
-        <button class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="toggleAddUserForm()">+ Profil</button>
+        <button class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="toggleAddUserForm()" aria-label="Ajouter un nouveau profil">+ Profil</button>
       </div>
 
       <!-- Formulaire d'ajout -->
       <div id="addUserForm" style="display:none; margin-bottom:8px;">
         <div class="row">
-          <input type="text" id="newUserName" placeholder="Nom du profil...">
-          <input type="color" id="newUserColor" value="#3b82f6" title="Couleur">
+          <input type="text" id="newUserName" placeholder="Nom du profil..." aria-label="Nom du nouveau profil">
+          <input type="color" id="newUserColor" value="#3b82f6" title="Couleur" aria-label="Couleur du nouveau profil">
           <button class="btn" onclick="createUser()">Créer</button>
         </div>
       </div>
@@ -213,8 +213,8 @@
       <div id="editPanel">
         <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:4px;">Modifier le profil :</div>
         <div class="row">
-          <input type="text" id="editUserName">
-          <input type="color" id="editUserColor">
+          <input type="text" id="editUserName" aria-label="Nom du profil à modifier">
+          <input type="color" id="editUserColor" aria-label="Couleur du profil à modifier">
         </div>
         <div class="row" style="justify-content: flex-end;">
           <button class="btn btn-danger" style="font-size:0.75rem;" onclick="deleteUser()">Supprimer</button>
@@ -228,7 +228,7 @@
 
     <!-- Recherche -->
     <div class="search-box">
-      <input type="text" id="search" placeholder="Rechercher réf. ou nom..." oninput="renderList()">
+      <input type="text" id="search" placeholder="Rechercher réf. ou nom..." oninput="renderList()" aria-label="Rechercher une carte par référence ou par nom">
     </div>
     
     <div class="list-container" id="list"></div>
@@ -475,14 +475,15 @@
         const item = document.createElement('div');
         item.className = `user-item ${isCurrent ? 'user-item-active' : ''}`;
         
+        const userNameEsc = escapeHtml(u.user_name);
         item.innerHTML = `
           <div class="user-info-label" onclick="selectActiveUser(${u.id})">
-            <input type="checkbox" ${visibleUserIds.has(u.id) ? 'checked' : ''} onclick="toggleFilterUser(${u.id}, this.checked, event)">
+            <input type="checkbox" ${visibleUserIds.has(u.id) ? 'checked' : ''} onclick="toggleFilterUser(${u.id}, this.checked, event)" aria-label="Afficher ou masquer les cartes de ${userNameEsc}">
             <span class="color-dot" style="background:${escapeHtml(u.color)}"></span>
-            <span style="font-weight:${isCurrent ? 'bold' : 'normal'}; color:${isCurrent ? '#38bdf8' : '#fff'}">${escapeHtml(u.user_name)}</span>
+            <span style="font-weight:${isCurrent ? 'bold' : 'normal'}; color:${isCurrent ? '#38bdf8' : '#fff'}">${userNameEsc}</span>
             <span style="font-size:0.7rem;color:#94a3b8;">(${(u.owned_cards || []).length})</span>
           </div>
-          <button class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="openEditPanel(users.find(x => x.id === ${u.id}), event)">⚙</button>
+          <button class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="openEditPanel(users.find(x => x.id === ${u.id}), event)" aria-label="Modifier le profil de ${userNameEsc}">⚙</button>
         `;
         userListEl.appendChild(item);
       });
@@ -535,13 +536,14 @@
             `<span class="owner-pill" style="background:${escapeHtml(o.color)}">${escapeHtml(o.user_name)}</span>`
           ).join('');
 
+          const cardRefEsc = escapeHtml(card.ref);
           div.innerHTML = `
             <div class="card-info">
-              <div class="card-ref">${escapeHtml(card.ref)}</div>
+              <div class="card-ref">${cardRefEsc}</div>
               <div class="card-name">${escapeHtml(card.name)}</div>
               <div class="owners-badges">${badgesHtml}</div>
             </div>
-            <button class="btn" style="padding:4px 8px; font-size:0.75rem; background:${isOwnedByMe ? '#16a34a' : '#475569'}">
+            <button class="btn" style="padding:4px 8px; font-size:0.75rem; background:${isOwnedByMe ? '#16a34a' : '#475569'}" aria-label="${isOwnedByMe ? 'Retirer la carte ' + cardRefEsc : 'Ajouter la carte ' + cardRefEsc}">
               ${isOwnedByMe ? 'Possédée' : 'Ajouter'}
             </button>
           `;
