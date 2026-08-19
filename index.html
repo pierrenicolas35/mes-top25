@@ -183,20 +183,60 @@
     let geoLayers = {};
     let userBeingEdited = null;
 
-    // 1. Initialisation Leaflet avec fond Géoplateforme IGN (TOP 25)
-    const map = L.map('map').setView([45.2, 5.9], 9);
+  // 1. Initialisation de la carte
+    const map = L.map('map', {
+      center: [45.2, 5.9],
+      zoom: 9
+    });
 
-    const ignLayer = L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+    // --- FONDS DE CARTE IGN (Géoplateforme officielle) ---
+    const scan25Layer = L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.SCAN25TOUR&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
       maxZoom: 18,
-      attribution: '© IGN - Géoplateforme'
-    }).addTo(map);
+      minZoom: 6,
+      attribution: '© IGN - Cartes TOP 25'
+    });
 
+    const planIgnLayer = L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&FORMAT=image/png&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+      maxZoom: 19,
+      attribution: '© IGN - Plan IGN'
+    });
+
+    const satIgnLayer = L.tileLayer('https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}', {
+      maxZoom: 19,
+      attribution: '© IGN - Orthophoto'
+    });
+
+    // --- FONDS DE CARTE GOOGLE ---
+    const googleRoads = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      attribution: '© Google Maps'
+    });
+
+    const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      attribution: '© Google Satellite'
+    });
+
+    // --- OPENSTREETMAP ---
     const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
+      maxZoom: 19,
       attribution: '© OpenStreetMap'
     });
 
-    L.control.layers({ "Plan IGN (TOP 25)": ignLayer, "OpenStreetMap": osmLayer }).addTo(map);
+    // Fond affiché par défaut (Plan IGN ou TOP 25)
+    planIgnLayer.addTo(map);
+
+    // Sélecteur de couches en haut à droite
+    const baseMaps = {
+      "🗺️ Plan IGN": planIgnLayer,
+      "🌲 Carte TOP 25 (IGN)": scan25Layer,
+      "🛰️ Satellite IGN": satIgnLayer,
+      "📍 Google Maps": googleRoads,
+      "🌍 Google Satellite": googleHybrid,
+      "🌐 OpenStreetMap": osmLayer
+    };
+
+    L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
 
     // 2. Chargement initial
     Promise.all([
