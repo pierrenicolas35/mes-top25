@@ -239,16 +239,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    function escapeHtml(unsafe) {
-      if (typeof unsafe !== 'string') return unsafe;
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzq_nTRyluvvIz23JXm-cUS9NxmIwrPqueXIpYVyRfjGD_6iAXvL35CKEzMo4iH2l5I/exec";
 
     let IGN_DATA = [];
@@ -327,7 +317,7 @@
         ];
         // Création de l'emprise sans événement de clic direct pour sécuriser le tactile
         const rect = L.rectangle(bounds, { color: 'var(--md-sys-color-outline)', weight: 0.8, fillOpacity: 0.05 }).addTo(map);
-        rect.bindTooltip(`<b>${escapeHtml(card.ref)}</b><br>${escapeHtml(card.name)}`, { sticky: true });
+        rect.bindTooltip(`<b>${card.ref}</b><br>${card.name}`, { sticky: true });
         geoLayers[card.ref] = rect;
       });
 
@@ -478,8 +468,8 @@
         item.innerHTML = `
           <div class="user-info-label" onclick="selectActiveUser(${u.id})">
             <input type="checkbox" ${visibleUserIds.has(u.id) ? 'checked' : ''} onclick="toggleFilterUser(${u.id}, this.checked, event)">
-            <span class="color-dot" style="background:${escapeHtml(u.color)}"></span>
-            <span style="font-weight:${isCurrent ? 'bold' : 'normal'}; color:${isCurrent ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)'}">${escapeHtml(u.user_name)}</span>
+            <span class="color-dot" style="background:${u.color}"></span>
+            <span style="font-weight:${isCurrent ? 'bold' : 'normal'}; color:${isCurrent ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)'}">${u.user_name}</span>
             <span style="font-size:0.7rem;color:var(--md-sys-color-on-surface-variant);">(${(u.owned_cards || []).length})</span>
           </div>
           <button class="btn btn-outline" style="padding:2px 6px; font-size:0.7rem;" onclick="openEditPanel(users.find(x => x.id === ${u.id}), event)">⚙</button>
@@ -532,13 +522,13 @@
           div.className = `card-item ${isOwnedByMe ? 'owned' : ''}`;
           
           let badgesHtml = cardOwners.map(o => 
-            `<span class="owner-pill" style="background:${escapeHtml(o.color)}">${escapeHtml(o.user_name)}</span>`
+            `<span class="owner-pill" style="background:${o.color}">${o.user_name}</span>`
           ).join('');
 
           div.innerHTML = `
             <div class="card-info">
-              <div class="card-ref">${escapeHtml(card.ref)}</div>
-              <div class="card-name">${escapeHtml(card.name)}</div>
+              <div class="card-ref">${card.ref}</div>
+              <div class="card-name">${card.name}</div>
               <div class="owners-badges">${badgesHtml}</div>
             </div>
             <button class="btn" style="padding:4px 8px; font-size:0.75rem; background:${isOwnedByMe ? '#16a34a' : 'var(--md-sys-color-secondary)'}">
