@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Application web progressive (PWA) permettant de suivre les cartes IGN **Série Bleue** (TOP 25, 1:25 000) que vous possédez pour la France métropolitaine.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pierrenicolas35/mes-top25.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/pierrenicolas35/mes-top25/issues"
+  },
+  "homepage": "https://github.com/pierrenicolas35/mes-top25#readme",
+  "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "babel-jest": "^30.4.1",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "jsdom": "^22.1.0"
+  }
+}
