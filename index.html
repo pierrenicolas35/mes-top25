@@ -325,6 +325,15 @@
     }).catch(err => console.error("Erreur d'initialisation :", err));
 
     // 3. Gestion Google Sheets
+    function postToGoogleScript(bodyData) {
+      return fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyData)
+      });
+    }
+
     async function loadUsersFromSheets(forceUpdate = false) {
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL);
@@ -364,12 +373,7 @@
       refreshUserControls();
       updateMapAndUI();
 
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create_user', user_name: name, color: color })
-      });
+      postToGoogleScript({ action: 'create_user', user_name: name, color: color });
     }
 
     function openEditPanel(user, e) {
@@ -399,12 +403,7 @@
       refreshUserControls();
       updateMapAndUI();
 
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_user', old_name: oldName, new_name: newName, color: newColor })
-      });
+      postToGoogleScript({ action: 'update_user', old_name: oldName, new_name: newName, color: newColor });
     }
 
     async function deleteUser() {
@@ -419,12 +418,7 @@
       refreshUserControls();
       updateMapAndUI();
 
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete_user', user_name: nameToDelete })
-      });
+      postToGoogleScript({ action: 'delete_user', user_name: nameToDelete });
     }
 
     async function toggleCard(ref) {
@@ -445,12 +439,7 @@
       user.owned_cards = owned;
       updateMapAndUI();
 
-      fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save_cards', user_name: user.user_name, owned_cards: owned })
-      });
+      postToGoogleScript({ action: 'save_cards', user_name: user.user_name, owned_cards: owned });
     }
 
     function selectActiveUser(id) {
