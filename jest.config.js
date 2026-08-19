@@ -1,6 +1,4 @@
 module.exports = {
-  testEnvironment: 'node',
-  transformIgnorePatterns: [
-    "node_modules/(?!@exodus/bytes)"
-  ]
+  testEnvironment: 'jsdom',
+  testPathIgnorePatterns: ['/node_modules/', 'sw.test.js']
 };

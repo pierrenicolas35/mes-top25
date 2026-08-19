@@ -1,3 +1,7 @@
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 const fs = require('fs');
 const path = require('path');
 const { JSDOM } = require('jsdom');
@@ -10,7 +14,10 @@ describe('loadUsersFromSheets', () => {
         const html = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8');
 
         // Extract script to inject into our clean DOM
-        const scriptMatch = html.match(/<script>\s*(const GOOGLE_SCRIPT_URL[\s\S]*?)<\/script>/);
+        const scriptMatch = html.match(/<script>\s*(function escapeHtml[\s\S]*?)<\/script>/);
+        if (!scriptMatch) {
+            throw new Error('Could not find the expected inline script block in index.html. The regex pattern may need to be updated.');
+        }
         let inlineScript = scriptMatch[1];
 
         // Remove the Promise.all initial execution so tests can control it
