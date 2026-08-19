@@ -236,7 +236,7 @@
       "🌐 OpenStreetMap": osmLayer
     };
 
-    L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
+    L.control.layers(baseMaps, null, { position: 'topright', collapsed: true }).addTo(map);
 
     // 2. Chargement initial
     Promise.all([
