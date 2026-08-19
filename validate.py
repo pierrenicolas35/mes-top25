@@ -22,6 +22,11 @@ REQUIRED_REFS = {
     "3536OT",   # Briançon / Serre-Chevalier / Montgenèvre
 }
 
+def is_valid_bbox(bbox):
+    return (isinstance(bbox, list) and
+            len(bbox) == 4 and
+            all(isinstance(v, (int, float)) for v in bbox))
+
 # France métropolitaine bounding box (WGS84)
 FRANCE_LAT_MIN = 42.30
 FRANCE_LAT_MAX = 51.15
@@ -49,11 +54,8 @@ for i, card in enumerate(data):
         continue
     if not name:
         errors.append(f"[{i}] {ref}: Missing 'name' field")
-    if not isinstance(bbox, list) or len(bbox) != 4:
+    if not is_valid_bbox(bbox):
         errors.append(f"[{i}] {ref}: 'bbox' must be a list of 4 numbers")
-        continue
-    if not all(isinstance(v, (int, float)) for v in bbox):
-        errors.append(f"[{i}] {ref}: 'bbox' values must be numeric")
         continue
 
     lat_min, lon_min, lat_max, lon_max = bbox
@@ -94,9 +96,7 @@ for ref in sorted(REQUIRED_REFS):
         errors.append(f"Required card missing: {ref}")
 
 # ── France coverage: check at least N distinct lat/lon bands ──
-valid_cards = [c for c in data
-               if isinstance(c.get("bbox"), list) and len(c["bbox"]) >= 4
-               and all(isinstance(v, (int, float)) for v in c["bbox"])]
+valid_cards = [c for c in data if is_valid_bbox(c.get("bbox"))]
 lat_bands = set(round(c["bbox"][0], 2) for c in valid_cards
                 if FRANCE_LAT_MIN <= c["bbox"][0] <= FRANCE_LAT_MAX)
 lon_bands = set(round(c["bbox"][1], 2) for c in valid_cards
