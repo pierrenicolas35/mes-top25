@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cartes-ign-v3';
+const CACHE_NAME = 'cartes-ign-v4';
 const ASSETS = [
   './',
   './index.html',

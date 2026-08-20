@@ -66,7 +66,7 @@ test('Service Worker Tests', async (t) => {
 
     await waitUntilPromise;
 
-    assert.ok(mockCaches.store['cartes-ign-v2']);
+    assert.ok(mockCaches.store['cartes-ign-v4']);
     assert.ok(mockCache.assets.includes('./index.html'));
     assert.strictEqual(mockCache.assets.length, 5);
   });
